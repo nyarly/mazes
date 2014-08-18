@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require 'html_maze/cli'
+
+HTMLMaze::CLI.new(ARGV).start

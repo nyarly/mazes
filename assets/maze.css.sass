@@ -1,0 +1,77 @@
+@import "compass/css3/transform"
+
+$wall-size: 70vh
+$top :  0
+$left : 0
+
+*
+  padding: 0
+  margin: 0
+
+ul.nav
+  position: relative
+  top: $wall-size
+.view
+  +transform-style(preserve-3d)
+  *
+    +transform-style(preserve-3d)
+  +perspective(500px)
+  +perspective-origin($wall-size/2  $wall-size/2)
+  +transform(translate($top, $left))
+
+  border: 2px solid grey
+  display: block
+  position: absolute
+  top: 0
+  left: 0
+  width: $wall-size
+  height: $wall-size
+
+  overflow: hidden
+
+  .open, .wall
+    display: block
+    position: absolute
+    top: 0
+    left: 0
+    width: $wall-size
+    height: $wall-size
+  li.wall
+    background-image: url(rock.png)
+
+.open.north
+  & > .north
+    +transform(translateZ(-$wall-size))
+  & > .east
+    +transform-origin(right)
+    +transform(rotateY(-90deg))
+  & > .west
+    +transform-origin(left)
+    +transform(rotateY(90deg))
+.open.east
+  & > .east
+    +transform(translateZ(-$wall-size))
+  & > .south
+    +transform-origin(right)
+    +transform(rotateY(-90deg))
+  & > .north
+    +transform-origin(left)
+    +transform(rotateY(90deg))
+.open.west
+  & > .west
+    +transform(translateZ(-$wall-size))
+  & > .north
+    +transform-origin(right)
+    +transform(rotateY(-90deg))
+  & > .south
+    +transform-origin(left)
+    +transform(rotateY(90deg))
+.open.south
+  & > .south
+    +transform(translateZ(-$wall-size))
+  & > .west
+    +transform-origin(right)
+    +transform(rotateY(-90deg))
+  & > .east
+    +transform-origin(left)
+    +transform(rotateY(90deg))

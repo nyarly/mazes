@@ -1,4 +1,4 @@
-module Mazes
+module HTMLMaze
   class Maze
     def initialize(wide, high)
       @wide, @high = wide, high
@@ -43,6 +43,10 @@ module Mazes
     def from(cell)
       Cell.new(cell.maze, cell.x + @dx, cell.y + @dy)
     end
+
+    def towards?(start, to) #will this move reduce the distance
+      start.distance(to) >= from(start).distance(to)
+    end
   end
 
   class DownSide
@@ -56,6 +60,10 @@ module Mazes
 
     def set(cell, value)
       cell.maze.downs[cell.x][cell.y + @dx] = value
+    end
+
+    def wall?(cell)
+      at(cell) == cell.maze.blank_wall
     end
 
     def string_for(cell)
@@ -99,6 +107,20 @@ module Mazes
     :east_wall => RightSide.new(1)
   }
 
+  WALLS = {
+    :north => DownSide.new(0),
+    :south => DownSide.new(1),
+    :west => RightSide.new(0),
+    :east => RightSide.new(1)
+  }
+
+  MOVES = {
+    :north => Move.new(0, -1),
+    :south => Move.new(0,  1),
+    :east  => Move.new( 1, 0),
+    :west  => Move.new(-1, 0),
+    }
+
   class Cell
     def initialize(maze, x, y)
       @maze = maze
@@ -116,6 +138,14 @@ module Mazes
       "W:#{Compass[:west_wall].at(self).inspect rescue "?"}>"
     end
 
+    def wall?(dir)
+      WALLS[dir].wall?(self)
+    end
+
+    def move(dir)
+      MOVES[dir].from(self)
+    end
+
     def here
       maze.cells[x][y]
     end
@@ -123,9 +153,17 @@ module Mazes
     def set(value)
       maze.cells[x][y] = value
     end
+
+    def distance(to)
+      (x - to.x).abs + (y - to.y).abs
+    end
   end
 
   class BacktrackingDigger
+    def self.dig(maze)
+      new(maze).dig!
+    end
+
     def initialize(maze)
       @maze = maze
       @visited = Hash.new do |h,k|
@@ -186,7 +224,6 @@ module Mazes
         visit(neighbor[3])
         dig.push(neighbor[3])
       end
-      puts "\n#{__FILE__}:#{__LINE__} => #{1000 - count}"
     end
   end
 
@@ -195,7 +232,7 @@ module Mazes
       @maze = maze
     end
 
-    def render
+    def render(at_x=nil, at_y=nil, spot_char=nil)
       cell = Cell.new(@maze, 0, 0)
 
       (0...@maze.high).each do |y|
@@ -210,7 +247,11 @@ module Mazes
         (0...@maze.wide).each do |x|
           cell.x = x
           print Compass[:west_wall].string_for(cell)
-          print cell.here == @maze.bread_crumb ? "." : " "
+          if cell.x == at_x and cell.y == at_y
+            print spot_char || "x"
+          else
+            print cell.here == @maze.bread_crumb ? "." : " "
+          end
         end
         puts Compass[:east_wall].string_for(cell)
       end
@@ -226,8 +267,8 @@ module Mazes
 end
 
 if __FILE__ == $0
-  maze = Mazes::Maze.new(15,15)
-  Mazes::BacktrackingDigger.new(maze).dig!
-  Mazes::Formatter.new(maze).render
-  p Mazes::Cell.new(maze,4,4)
+  maze = HTMLMaze::Maze.new(15,15)
+  HTMLMaze::BacktrackingDigger.dig(maze)
+  HTMLMaze::Formatter.new(maze).render
+  p HTMLMaze::Cell.new(maze,4,4)
 end
